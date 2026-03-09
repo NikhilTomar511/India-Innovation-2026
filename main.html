@@ -4,1256 +4,342 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vayumitra - City Pollution Reporter</title>
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.bunny.net">
-<link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
-<!-- Leaflet CSS - REQUIRED FOR MAP -->
+<!-- Modern Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<!-- Leaflet Heatmap CSS (Optional, usually handled by JS, but keeping head clean) -->
-<style>
-:root {
---primary: #1976d2;
---primary-dark: #0d47a1;
---primary-light: #42a5f5;
---primary-gradient: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
---secondary: #00acc1;
---success: #2e7d32;
---success-light: #4caf50;
---warning: #f57c00;
---danger: #d32f2f;
---danger-light: #ef5350;
---bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
---card-bg: #ffffff;
---text-primary: #1a1a2e;
---text-secondary: #4a4a68;
---text-muted: #888899;
---border-color: #e0e0e8;
---border-radius: 16px;
---border-radius-sm: 8px;
---border-radius-lg: 24px;
---shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
---shadow-md: 0 4px 16px rgba(0,0,0,0.12);
---shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
---shadow-xl: 0 12px 48px rgba(0,0,0,0.2);
---transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-background: var(--bg-gradient);
-min-height: 100vh;
-color: var(--text-primary);
-line-height: 1.6;
-}
-/* Animations */
-@keyframes fadeIn {
-from { opacity: 0; transform: translateY(20px); }
-to { opacity: 1; transform: translateY(0); }
-}
-@keyframes float {
-0%, 100% { transform: translateY(0); }
-50% { transform: translateY(-10px); }
-}
-.animate-fade { animation: fadeIn 0.6s ease forwards; }
-.animate-float { animation: float 3s ease-in-out infinite; }
-/* Header */
-.header {
-background: var(--primary-gradient);
-color: white;
-padding: 20px 0;
-box-shadow: var(--shadow-md);
-position: sticky;
-top: 0;
-z-index: 1000;
-}
-.header-content {
-max-width: 1400px;
-margin: 0 auto;
-padding: 0 20px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-flex-wrap: wrap;
-gap: 16px;
-}
-.logo {
-display: flex;
-align-items: center;
-gap: 14px;
-text-decoration: none;
-color: white;
-}
-.logo-icon {
-width: 52px;
-height: 52px;
-background: rgba(255,255,255,0.2);
-border-radius: 14px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 28px;
-}
-.logo-text h1 { font-size: 1.6rem; font-weight: 800; }
-.logo-text p { font-size: 0.85rem; opacity: 0.9; }
-.nav-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-.nav-btn {
-padding: 11px 20px;
-border: 2px solid transparent;
-background: rgba(255,255,255,0.15);
-color: white;
-border-radius: 10px;
-cursor: pointer;
-font-weight: 600;
-font-size: 0.9rem;
-transition: var(--transition);
-text-decoration: none;
-}
-.nav-btn:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
-.nav-btn.active, .nav-btn.primary { background: white; color: var(--primary); }
-.nav-btn.danger { background: rgba(239, 83, 80, 0.3); }
-/* Container */
-.container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
-/* Page Sections */
-.page-section { display: none; }
-.page-section.active { display: block; animation: fadeIn 0.4s ease; }
-/* Hero */
-.hero {
-text-align: center;
-margin-bottom: 40px;
-padding: 50px 30px;
-background: var(--card-bg);
-border-radius: var(--border-radius-lg);
-box-shadow: var(--shadow-md);
-}
-.hero::before {
-content: '';
-position: absolute;
-top: 0; left: 0; right: 0;
-height: 5px;
-background: var(--primary-gradient);
-}
-.hero h2 { font-size: 2.2rem; font-weight: 800; margin-bottom: 14px; }
-.hero p { color: var(--text-secondary); font-size: 1.15rem; max-width: 650px; margin: 0 auto; }
-.hero-icon { font-size: 64px; margin-bottom: 20px; display: inline-block; animation: float 3s ease-in-out infinite; }
-/* Stats */
-.stats-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-gap: 24px;
-margin-bottom: 35px;
-}
-.stat-card {
-background: var(--card-bg);
-padding: 32px 28px;
-border-radius: var(--border-radius);
-box-shadow: var(--shadow-sm);
-text-align: center;
-transition: var(--transition);
-border: 1px solid var(--border-color);
-}
-.stat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); }
-.stat-icon {
-width: 68px;
-height: 68px;
-background: var(--primary-gradient);
-border-radius: 16px;
-display: flex;
-align-items: center;
-justify-content: center;
-margin: 0 auto 18px;
-font-size: 32px;
-}
-.stat-card h3 { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 10px; }
-.stat-card .value { font-size: 2.8rem; font-weight: 800; color: var(--primary); }
-.stat-card.success .value { color: var(--success); }
-.stat-card.warning .value { color: var(--warning); }
-/* Filters */
-.filters {
-display: flex;
-gap: 12px;
-flex-wrap: wrap;
-margin-bottom: 28px;
-padding: 18px;
-background: var(--card-bg);
-border-radius: var(--border-radius);
-box-shadow: var(--shadow-sm);
-}
-.filter-btn {
-padding: 13px 26px;
-border: 2px solid var(--border-color);
-background: #f8f9fc;
-color: var(--text-secondary);
-border-radius: 12px;
-cursor: pointer;
-font-weight: 600;
-transition: var(--transition);
-}
-.filter-btn:hover { background: #e8ecf1; }
-.filter-btn.active { background: var(--primary-gradient); color: white; border-color: transparent; }
-/* Map - FIXED */
-.map-container {
-background: var(--card-bg);
-border-radius: var(--border-radius);
-box-shadow: var(--shadow-md);
-overflow: hidden;
-margin-bottom: 35px;
-border: 1px solid var(--border-color);
-}
-.map-header {
-padding: 22px 28px;
-border-bottom: 1px solid var(--border-color);
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.map-header h3 { font-size: 1.2rem; font-weight: 700; }
-#map, #dashboardMap, #unresolvedMap {
-height: 450px !important;
-width: 100% !important;
-}
-/* Form */
-.form-section {
-background: var(--card-bg);
-border-radius: var(--border-radius);
-box-shadow: var(--shadow-md);
-padding: 40px;
-margin-bottom: 35px;
-}
-.form-header {
-display: flex;
-align-items: center;
-gap: 16px;
-margin-bottom: 30px;
-padding-bottom: 20px;
-border-bottom: 1px solid var(--border-color);
-}
-.form-header-icon {
-width: 54px;
-height: 54px;
-background: var(--primary-gradient);
-border-radius: 14px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 26px;
-}
-.form-header h3 { font-size: 1.4rem; font-weight: 700; }
-.form-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-gap: 24px;
-}
-.form-group { margin-bottom: 20px; }
-.form-group.full-width { grid-column: 1 / -1; }
-.form-group label {
-display: block;
-font-weight: 600;
-margin-bottom: 10px;
-}
-.form-group input, .form-group select, .form-group textarea {
-width: 100%;
-padding: 15px 18px;
-border: 2px solid var(--border-color);
-border-radius: 12px;
-font-size: 1rem;
-font-family: inherit;
-transition: var(--transition);
-}
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
-}
-.form-group textarea { min-height: 120px; resize: vertical; }
-.image-upload-area {
-border: 2px dashed var(--border-color);
-border-radius: 14px;
-padding: 35px;
-text-align: center;
-cursor: pointer;
-transition: var(--transition);
-background: #fafbfc;
-}
-.image-upload-area:hover { border-color: var(--primary); background: #f0f4f8; }
-.image-upload-icon { font-size: 48px; margin-bottom: 15px; display: block; }
-#imagePreview { margin-top: 20px; border-radius: 12px; overflow: hidden; }
-#imagePreview img { width: 100%; max-height: 300px; object-fit: cover; }
-.location-info {
-display: flex;
-gap: 16px;
-flex-wrap: wrap;
-padding: 16px;
-background: #f0f4f8;
-border-radius: 12px;
-margin-top: 15px;
-font-size: 0.9rem;
-}
-/* Buttons */
-.btn {
-padding: 15px 32px;
-border: none;
-border-radius: 12px;
-cursor: pointer;
-font-weight: 700;
-font-size: 1rem;
-transition: var(--transition);
-display: inline-flex;
-align-items: center;
-justify-content: center;
-gap: 10px;
-text-decoration: none;
-}
-.btn-primary {
-background: var(--primary-gradient);
-color: white;
-box-shadow: 0 4px 14px rgba(25, 118, 210, 0.4);
-}
-.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(25, 118, 210, 0.5); }
-.btn-secondary {
-background: #f0f4f8;
-color: var(--text-primary);
-border: 2px solid var(--border-color);
-}
-.btn-secondary:hover { background: #e0e6ed; border-color: var(--primary); }
-.btn-lg { padding: 18px 40px; font-size: 1.1rem; }
-.btn-block { width: 100%; }
-.btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-/* Report List */
-.report-list { list-style: none; padding: 0; }
-.report-item {
-background: var(--card-bg);
-margin-bottom: 18px;
-padding: 24px;
-border-radius: var(--border-radius);
-box-shadow: var(--shadow-sm);
-border: 1px solid var(--border-color);
-transition: var(--transition);
-}
-.report-item:hover { box-shadow: var(--shadow-md); transform: translateX(4px); }
-.report-header {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-gap: 16px;
-margin-bottom: 16px;
-flex-wrap: wrap;
-}
-.report-title { font-size: 1.1rem; font-weight: 700; }
-.report-status {
-padding: 6px 14px;
-border-radius: 20px;
-font-size: 0.8rem;
-font-weight: 600;
-text-transform: uppercase;
-}
-.report-status.pending { background: #fff3e0; color: var(--warning); }
-.report-status.review { background: #e3f2fd; color: var(--primary); }
-.report-status.resolved { background: #e8f5e9; color: var(--success); }
-.report-details {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-gap: 12px;
-margin-bottom: 16px;
-}
-.report-detail { font-size: 0.9rem; color: var(--text-secondary); }
-.report-detail strong { color: var(--text-primary); font-weight: 600; }
-.report-image { margin-top: 16px; border-radius: 12px; overflow: hidden; }
-.report-image img { width: 100%; max-height: 250px; object-fit: cover; }
-.report-actions {
-display: flex;
-gap: 10px;
-flex-wrap: wrap;
-margin-top: 18px;
-padding-top: 18px;
-border-top: 1px solid var(--border-color);
-}
-.report-actions .btn { padding: 10px 18px; font-size: 0.9rem; }
-.vote-buttons { display: flex; gap: 8px; margin-top: 12px; }
-.vote-btn {
-padding: 8px 16px;
-border: 2px solid var(--border-color);
-background: #f8f9fc;
-border-radius: 10px;
-cursor: pointer;
-font-weight: 600;
-transition: var(--transition);
-}
-.vote-btn:hover { border-color: var(--primary); background: #e3f2fd; }
-.vote-btn.upvote:hover { border-color: var(--success); background: #e8f5e9; }
-/* Success Message */
-.success-message {
-background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-border: 2px solid var(--success);
-border-radius: var(--border-radius);
-padding: 35px;
-text-align: center;
-margin-top: 30px;
-animation: fadeIn 0.5s ease;
-}
-.success-icon { font-size: 64px; margin-bottom: 20px; display: block; }
-.success-message h3 { font-size: 1.5rem; color: var(--success); margin-bottom: 12px; }
-.success-message p { color: var(--text-secondary); margin-bottom: 15px; }
-.acknowledgement-number {
-font-size: 2rem;
-font-weight: 800;
-color: var(--primary);
-background: white;
-padding: 15px 30px;
-border-radius: 12px;
-display: inline-block;
-box-shadow: var(--shadow-sm);
-}
-/* Track */
-.track-form { max-width: 500px; margin: 0 auto; }
-.track-input-group {
-display: flex;
-gap: 12px;
-margin-bottom: 20px;
-}
-.track-input-group input {
-flex: 1;
-padding: 16px 20px;
-border: 2px solid var(--border-color);
-border-radius: 12px;
-font-size: 1rem;
-}
-.track-input-group input:focus {
-outline: none;
-border-color: var(--primary);
-box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
-}
-.track-result {
-background: var(--card-bg);
-border-radius: var(--border-radius);
-padding: 30px;
-margin-top: 30px;
-box-shadow: var(--shadow-md);
-display: none;
-}
-.track-result.show { display: block; animation: fadeIn 0.4s ease; }
-/* Login */
-.login-container { max-width: 450px; margin: 60px auto; }
-.login-card {
-background: var(--card-bg);
-border-radius: var(--border-radius-lg);
-box-shadow: var(--shadow-lg);
-padding: 45px;
-}
-.login-header { text-align: center; margin-bottom: 35px; }
-.login-icon {
-width: 80px;
-height: 80px;
-background: var(--primary-gradient);
-border-radius: 20px;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 40px;
-margin: 0 auto 20px;
-}
-.login-header h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
-.login-header p { color: var(--text-muted); }
-/* Footer */
-.footer {
-background: var(--text-primary);
-color: white;
-padding: 40px 20px;
-margin-top: 60px;
-text-align: center;
-}
-.footer-logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; }
-.footer p { color: rgba(255,255,255,0.7); }
-.footer-links { display: flex; justify-content: center; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
-.footer-links a { color: rgba(255,255,255,0.8); text-decoration: none; }
-.footer-links a:hover { color: white; }
-/* Toast */
-.toast {
-position: fixed;
-bottom: 30px;
-right: 30px;
-background: var(--text-primary);
-color: white;
-padding: 16px 24px;
-border-radius: 12px;
-box-shadow: var(--shadow-lg);
-display: flex;
-align-items: center;
-gap: 12px;
-transform: translateX(120%);
-transition: var(--transition);
-z-index: 2000;
-}
-.toast.show { transform: translateX(0); }
-.toast.success { background: var(--success); }
-.toast.error { background: var(--danger); }
-/* Responsive */
-@media (max-width: 768px) {
-.header-content { flex-direction: column; text-align: center; }
-.hero h2 { font-size: 1.6rem; }
-.stats-grid { grid-template-columns: 1fr; }
-.form-section { padding: 25px; }
-.track-input-group { flex-direction: column; }
-#map, #dashboardMap, #unresolvedMap { height: 350px !important; }
-}
-</style>
+<!-- Custom CSS -->
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <!-- Header -->
 <header class="header">
-<div class="header-content">
-<a href="#" class="logo" onclick="showPage('home')">
-<div class="logo-icon">🌿</div>
-<div class="logo-text">
-<h1>Vayu Mitra</h1>
-<p>Civic Pollution Reporting Platform</p>
-</div>
-</a>
-<nav class="nav-buttons">
-<a href="#" class="nav-btn active" onclick="showPage('home')">📝 Report</a>
-<a href="#" class="nav-btn" onclick="showPage('track')">🔍 Track</a>
-<a href="#" class="nav-btn" onclick="showPage('unresolved')">⚠️ Unresolved</a>
-<a href="#" class="nav-btn" onclick="showPage('resolved')">✅ Resolved</a>
-<a href="#" class="nav-btn danger" onclick="showPage('login')">🔐 Admin</a>
-</nav>
-</div>
+    <div class="header-content">
+        <a href="#" class="logo" onclick="showPage('home')">
+            <div class="logo-icon">🌿</div>
+            <div class="logo-text">
+                <h1>Vayu Mitra</h1>
+                <p>Civic Pollution Reporting Platform</p>
+            </div>
+        </a>
+        <nav class="nav-buttons">
+            <a href="#" class="nav-btn active" onclick="showPage('home')">📝 Report</a>
+            <a href="#" class="nav-btn" onclick="showPage('track')">🔍 Track</a>
+            <a href="#" class="nav-btn" onclick="showPage('unresolved')">⚠️ Unresolved</a>
+            <a href="#" class="nav-btn" onclick="showPage('resolved')">✅ Resolved</a>
+            <a href="#" class="nav-btn danger" onclick="showPage('login')">🔐 Admin</a>
+            <!-- Dark Mode Toggle -->
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+        </nav>
+    </div>
 </header>
+
 <!-- Main Container -->
 <div class="container">
-<!-- Home Page -->
-<section id="home-page" class="page-section active">
-<div class="hero animate-fade">
-<span class="hero-icon">🏙️</span>
-<h2>Report Pollution Issues</h2>
-<p>Help improve air quality in your city by reporting pollution problems.</p>
+    <!-- Home Page -->
+    <section id="home-page" class="page-section active">
+        <div class="hero animate-fade">
+            <span class="hero-icon">🏙️</span>
+            <h2>Report Pollution Issues</h2>
+            <p>Help improve air quality in your city by reporting pollution problems.</p>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <h3>Total Reports</h3>
+                <div class="value" id="homeTotalReports">0</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⏳</div>
+                <h3>Pending</h3>
+                <div class="value" id="homePendingReports">0</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✓</div>
+                <h3>Resolved</h3>
+                <div class="value" id="homeResolvedReports">0</div>
+            </div>
+        </div>
+        <div class="form-section animate-fade">
+            <div class="form-header">
+                <div class="form-header-icon">📷</div>
+                <div>
+                    <h3>Submit New Report</h3>
+                    <p>Fill in the details below</p>
+                </div>
+            </div>
+            <form id="reportForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Colony / Area <span class="required">*</span></label>
+                        <input type="text" id="colony" placeholder="Enter colony name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number <span class="optional">(Optional)</span></label>
+                        <input type="tel" id="mobile" placeholder="Enter contact number">
+                    </div>
+                    <div class="form-group">
+                        <label>Issue Category <span class="required">*</span></label>
+                        <select id="category" required>
+                            <option value="">Select category</option>
+                            <option value="Open Construction Dust">🏗️ Open Construction Dust</option>
+                            <option value="Uncovered Debris">🗑️ Uncovered Debris</option>
+                            <option value="Illegal Dumping">🚮 Illegal Dumping</option>
+                            <option value="Garbage Burning">🔥 Garbage Burning</option>
+                            <option value="Road Dust">🛣️ Road Dust</option>
+                            <option value="Vehicle Emissions">🚗 Vehicle Emissions</option>
+                            <option value="Industrial Pollution">🏭 Industrial Pollution</option>
+                            <option value="Other">📋 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Description <span class="required">*</span></label>
+                        <textarea id="description" placeholder="Describe the issue..." required></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Capture Image <span class="required">*</span></label>
+                        <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageInput').click()">
+                            <span class="image-upload-icon">📸</span>
+                            <p>Click to upload photo</p>
+                            <span class="upload-hint">PNG, JPG up to 5MB</span>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;" required>
+                        <div id="imagePreview"></div>
+                    </div>
+                </div>
+                <div class="location-info">
+                    <span class="location-item">📍 <span id="latitude">Latitude: --</span></span>
+                    <span class="location-item">📍 <span id="longitude">Longitude: --</span></span>
+                    <span class="location-badge">🛰️ GPS Auto-Detected</span>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-lg">📤 Submit Report</button>
+                    <button type="button" class="btn btn-secondary btn-lg" onclick="getLocation()">🔄 Refresh Location</button>
+                </div>
+            </form>
+            <div id="successMessage" class="success-message" style="display: none;">
+                <span class="success-icon">✓</span>
+                <h3>Complaint Submitted!</h3>
+                <p>Your Acknowledgement Number:</p>
+                <div class="acknowledgement-number" id="ackNumber">RPT-0000000000</div>
+                <div class="btn-group" style="justify-content: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('successMessage').style.display='none'; document.getElementById('reportForm').reset(); document.getElementById('imagePreview').innerHTML='';">Submit Another</button>
+                    <button class="btn btn-primary" onclick="showPage('track')">Track Status</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Track Page -->
+    <section id="track-page" class="page-section">
+        <div class="hero animate-fade">
+            <span class="hero-icon">🔍</span>
+            <h2>Track Your Complaint</h2>
+            <p>Enter your acknowledgement number to check status</p>
+        </div>
+        <div class="form-section">
+            <div class="form-header">
+                <div class="form-header-icon">📋</div>
+                <div>
+                    <h3>Check Status</h3>
+                    <p>Enter acknowledgement number</p>
+                </div>
+            </div>
+            <div class="track-form">
+                <div class="track-input-group">
+                    <input type="text" id="trackInput" placeholder="Enter Acknowledgement Number (e.g., RPT-1234567890)">
+                    <button class="btn btn-primary" onclick="trackComplaint()">Check Status</button>
+                </div>
+            </div>
+            <div id="trackResult" class="track-result">
+                <div class="track-result-header">
+                    <div class="track-icon-wrapper" id="trackIcon">✓</div>
+                    <div>
+                        <h3 id="trackTitle">Complaint Status</h3>
+                        <p id="trackId">ID: RPT-0000000000</p>
+                    </div>
+                </div>
+                <div class="report-details">
+                    <div class="report-detail"><strong>Colony:</strong> <span id="trackColony">--</span></div>
+                    <div class="report-detail"><strong>Category:</strong> <span id="trackCategory">--</span></div>
+                    <div class="report-detail"><strong>Status:</strong> <span id="trackStatus">--</span></div>
+                    <div class="report-detail"><strong>Date:</strong> <span id="trackDate">--</span></div>
+                </div>
+                <div class="report-image" id="trackImageContainer" style="display: none;">
+                    <img id="trackImage" src="" alt="Report Image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Unresolved Page -->
+    <section id="unresolved-page" class="page-section">
+        <div class="hero animate-fade">
+            <span class="hero-icon">⚠️</span>
+            <h2>Unresolved Issues</h2>
+            <p>View and support pending pollution issues</p>
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterUnresolved('ALL')">All Colonies</button>
+            <button class="filter-btn" onclick="filterUnresolved('Pending')">Pending</button>
+            <button class="filter-btn" onclick="filterUnresolved('Under Review')">Under Review</button>
+        </div>
+        <div class="map-container">
+            <div class="map-header">
+                <h3>📍 Pollution Hotspots Map</h3>
+            </div>
+            <div id="unresolvedMap"></div>
+        </div>
+        <div class="form-section">
+            <div class="form-header">
+                <div class="form-header-icon">📋</div>
+                <div>
+                    <h3>Pending Reports</h3>
+                    <p>Support issues to prioritize resolution</p>
+                </div>
+            </div>
+            <ul class="report-list" id="unresolvedList"></ul>
+        </div>
+    </section>
+
+    <!-- Resolved Page -->
+    <section id="resolved-page" class="page-section">
+        <div class="hero animate-fade">
+            <span class="hero-icon">✅</span>
+            <h2>Resolved Issues</h2>
+            <p>View successfully resolved complaints</p>
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterResolved('ALL')">All Colonies</button>
+            <button class="filter-btn" onclick="searchResolved()">🔍 Search Colony</button>
+        </div>
+        <div class="form-section">
+            <div class="form-header">
+                <div class="form-header-icon">📋</div>
+                <div>
+                    <h3>Resolved Reports</h3>
+                    <p>Successfully addressed issues</p>
+                </div>
+            </div>
+            <ul class="report-list" id="resolvedList"></ul>
+        </div>
+    </section>
+
+    <!-- Dashboard Page -->
+    <section id="dashboard-page" class="page-section">
+        <div class="hero animate-fade">
+            <span class="hero-icon">📊</span>
+            <h2>Admin Dashboard</h2>
+            <p>Monitor and manage all pollution reports</p>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <h3>Total Issues</h3>
+                <div class="value" id="dashTotalReports">0</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-icon">⏳</div>
+                <h3>Pending</h3>
+                <div class="value" id="dashPendingReports">0</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-icon">✓</div>
+                <h3>Resolved</h3>
+                <div class="value" id="dashResolvedReports">0</div>
+            </div>
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterDashboard('ALL')">All Issues</button>
+            <button class="filter-btn" onclick="filterDashboard('Pending')">Pending</button>
+            <button class="filter-btn" onclick="filterDashboard('Under Review')">Under Review</button>
+            <button class="filter-btn" onclick="filterDashboard('Resolved')">Resolved</button>
+        </div>
+        <div class="map-container">
+            <div class="map-header">
+                <h3>📍 Reports Map</h3>
+            </div>
+            <div id="dashboardMap"></div>
+        </div>
+        <div class="form-section">
+            <div class="form-header">
+                <div class="form-header-icon">📋</div>
+                <div>
+                    <h3>All Reports</h3>
+                    <p>Manage and update statuses</p>
+                </div>
+            </div>
+            <ul class="report-list" id="dashboardList"></ul>
+        </div>
+    </section>
+
+    <!-- Login Page -->
+    <section id="login-page" class="page-section">
+        <div class="login-container animate-fade">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon">🔐</div>
+                    <h2>Admin Login</h2>
+                    <p>Access administration dashboard</p>
+                </div>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">🔐 Login</button>
+                </form>
+            </div>
+        </div>
+    </section>
 </div>
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-icon">📊</div>
-<h3>Total Reports</h3>
-<div class="value" id="homeTotalReports">0</div>
-</div>
-<div class="stat-card warning">
-<div class="stat-icon">⏳</div>
-<h3>Pending</h3>
-<div class="value" id="homePendingReports">0</div>
-</div>
-<div class="stat-card success">
-<div class="stat-icon">✓</div>
-<h3>Resolved</h3>
-<div class="value" id="homeResolvedReports">0</div>
-</div>
-</div>
-<div class="form-section animate-fade">
-<div class="form-header">
-<div class="form-header-icon">📷</div>
-<div>
-<h3>Submit New Report</h3>
-<p>Fill in the details below</p>
-</div>
-</div>
-<form id="reportForm">
-<div class="form-grid">
-<div class="form-group">
-<label>Colony / Area <span style="color:red">*</span></label>
-<input type="text" id="colony" placeholder="Enter colony name" required>
-</div>
-<div class="form-group">
-<label>Mobile Number (Optional)</label>
-<input type="tel" id="mobile" placeholder="Enter contact number">
-</div>
-<div class="form-group">
-<label>Issue Category <span style="color:red">*</span></label>
-<select id="category" required>
-<option value="">Select category</option>
-<option value="Open Construction Dust">🏗️ Open Construction Dust</option>
-<option value="Uncovered Debris">🗑️ Uncovered Debris</option>
-<option value="Illegal Dumping">🚮 Illegal Dumping</option>
-<option value="Garbage Burning">🔥 Garbage Burning</option>
-<option value="Road Dust">🛣️ Road Dust</option>
-<option value="Vehicle Emissions">🚗 Vehicle Emissions</option>
-<option value="Industrial Pollution">🏭 Industrial Pollution</option>
-<option value="Other">📋 Other</option>
-</select>
-</div>
-<div class="form-group full-width">
-<label>Description <span style="color:red">*</span></label>
-<textarea id="description" placeholder="Describe the issue..." required></textarea>
-</div>
-<div class="form-group full-width">
-<label>Capture Image <span style="color:red">*</span></label>
-<div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageInput').click()">
-<span class="image-upload-icon">📸</span>
-<p>Click to upload photo</p>
-</div>
-<input type="file" id="imageInput" accept="image/*" style="display: none;" required>
-<div id="imagePreview"></div>
-</div>
-</div>
-<div class="location-info">
-<span>📍 <span id="latitude">Latitude: --</span></span>
-<span>📍 <span id="longitude">Longitude: --</span></span>
-<span>🛰️ GPS Auto-Detected</span>
-</div>
-<div class="btn-group">
-<button type="submit" class="btn btn-primary btn-lg">📤 Submit Report</button>
-<button type="button" class="btn btn-secondary btn-lg" onclick="getLocation()">🔄 Refresh Location</button>
-</div>
-</form>
-<div id="successMessage" class="success-message" style="display: none;">
-<span class="success-icon">✓</span>
-<h3>Complaint Submitted!</h3>
-<p>Your Acknowledgement Number:</p>
-<div class="acknowledgement-number" id="ackNumber">RPT-0000000000</div>
-<div class="btn-group" style="justify-content: center; margin-top: 20px;">
-<button class="btn btn-secondary" onclick="document.getElementById('successMessage').style.display='none'; document.getElementById('reportForm').reset(); document.getElementById('imagePreview').innerHTML='';">Submit Another</button>
-<button class="btn btn-primary" onclick="showPage('track')">Track Status</button>
-</div>
-</div>
-</div>
-</section>
-<!-- Track Page -->
-<section id="track-page" class="page-section">
-<div class="hero animate-fade">
-<span class="hero-icon">🔍</span>
-<h2>Track Your Complaint</h2>
-<p>Enter your acknowledgement number to check status</p>
-</div>
-<div class="form-section">
-<div class="form-header">
-<div class="form-header-icon">📋</div>
-<div>
-<h3>Check Status</h3>
-<p>Enter acknowledgement number</p>
-</div>
-</div>
-<div class="track-form">
-<div class="track-input-group">
-<input type="text" id="trackInput" placeholder="Enter Acknowledgement Number">
-<button class="btn btn-primary" onclick="trackComplaint()">Check Status</button>
-</div>
-</div>
-<div id="trackResult" class="track-result">
-<div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-<div style="width: 60px; height: 60px; border-radius: 50%; background: #e8f5e9; color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 28px;" id="trackIcon">✓</div>
-<div>
-<h3 id="trackTitle">Complaint Status</h3>
-<p id="trackId">ID: RPT-0000000000</p>
-</div>
-</div>
-<div class="report-details">
-<div class="report-detail"><strong>Colony:</strong> <span id="trackColony">--</span></div>
-<div class="report-detail"><strong>Category:</strong> <span id="trackCategory">--</span></div>
-<div class="report-detail"><strong>Status:</strong> <span id="trackStatus">--</span></div>
-<div class="report-detail"><strong>Date:</strong> <span id="trackDate">--</span></div>
-</div>
-<div class="report-image" id="trackImageContainer" style="display: none;">
-<img id="trackImage" src="" alt="Report Image">
-</div>
-</div>
-</div>
-</section>
-<!-- Unresolved Page -->
-<section id="unresolved-page" class="page-section">
-<div class="hero animate-fade">
-<span class="hero-icon">⚠️</span>
-<h2>Unresolved Issues</h2>
-<p>View and support pending pollution issues</p>
-</div>
-<div class="filters">
-<button class="filter-btn active" onclick="filterUnresolved('ALL')">All Colonies</button>
-<button class="filter-btn" onclick="filterUnresolved('Pending')">Pending</button>
-<button class="filter-btn" onclick="filterUnresolved('Under Review')">Under Review</button>
-</div>
-<div class="map-container">
-<div class="map-header">
-<h3>📍 Pollution Hotspots Map</h3>
-</div>
-<div id="unresolvedMap"></div>
-</div>
-<div class="form-section">
-<div class="form-header">
-<div class="form-header-icon">📋</div>
-<div>
-<h3>Pending Reports</h3>
-<p>Support issues to prioritize resolution</p>
-</div>
-</div>
-<ul class="report-list" id="unresolvedList"></ul>
-</div>
-</section>
-<!-- Resolved Page -->
-<section id="resolved-page" class="page-section">
-<div class="hero animate-fade">
-<span class="hero-icon">✅</span>
-<h2>Resolved Issues</h2>
-<p>View successfully resolved complaints</p>
-</div>
-<div class="filters">
-<button class="filter-btn active" onclick="filterResolved('ALL')">All Colonies</button>
-<button class="filter-btn" onclick="searchResolved()">🔍 Search Colony</button>
-</div>
-<div class="form-section">
-<div class="form-header">
-<div class="form-header-icon">📋</div>
-<div>
-<h3>Resolved Reports</h3>
-<p>Successfully addressed issues</p>
-</div>
-</div>
-<ul class="report-list" id="resolvedList"></ul>
-</div>
-</section>
-<!-- Dashboard Page -->
-<section id="dashboard-page" class="page-section">
-<div class="hero animate-fade">
-<span class="hero-icon">📊</span>
-<h2>Admin Dashboard</h2>
-<p>Monitor and manage all pollution reports</p>
-</div>
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-icon">📊</div>
-<h3>Total Issues</h3>
-<div class="value" id="dashTotalReports">0</div>
-</div>
-<div class="stat-card warning">
-<div class="stat-icon">⏳</div>
-<h3>Pending</h3>
-<div class="value" id="dashPendingReports">0</div>
-</div>
-<div class="stat-card success">
-<div class="stat-icon">✓</div>
-<h3>Resolved</h3>
-<div class="value" id="dashResolvedReports">0</div>
-</div>
-</div>
-<div class="filters">
-<button class="filter-btn active" onclick="filterDashboard('ALL')">All Issues</button>
-<button class="filter-btn" onclick="filterDashboard('Pending')">Pending</button>
-<button class="filter-btn" onclick="filterDashboard('Under Review')">Under Review</button>
-<button class="filter-btn" onclick="filterDashboard('Resolved')">Resolved</button>
-</div>
-<div class="map-container">
-<div class="map-header">
-<h3>📍 Reports Map</h3>
-</div>
-<div id="dashboardMap"></div>
-</div>
-<div class="form-section">
-<div class="form-header">
-<div class="form-header-icon">📋</div>
-<div>
-<h3>All Reports</h3>
-<p>Manage and update statuses</p>
-</div>
-</div>
-<ul class="report-list" id="dashboardList"></ul>
-</div>
-</section>
-<!-- Login Page -->
-<section id="login-page" class="page-section">
-<div class="login-container animate-fade">
-<div class="login-card">
-<div class="login-header">
-<div class="login-icon">🔐</div>
-<h2>Admin Login</h2>
-<p>Access administration dashboard</p>
-</div>
-<form id="loginForm" onsubmit="handleLogin(event)">
-<div class="form-group">
-<label>Username</label>
-<input type="text" id="username" placeholder="Enter username" required>
-</div>
-<div class="form-group">
-<label>Password</label>
-<input type="password" id="password" placeholder="Enter password" required>
-</div>
-<button type="submit" class="btn btn-primary btn-lg btn-block">🔐 Login</button>
-</form>
-</div>
-</div>
-</section>
-</div>
+
 <!-- Footer -->
 <footer class="footer">
-<div class="footer-content">
-<div class="footer-logo">🌿 Vayumitra</div>
-<p>Municipal Corporation of Delhi – Civic Pollution Reporting Platform</p>
-<div class="footer-links">
-<a href="#" onclick="showPage('home')">Report</a>
-<a href="#" onclick="showPage('track')">Track</a>
-<a href="#" onclick="showPage('login')">Admin</a>
-</div>
-</div>
+    <div class="footer-content">
+        <div class="footer-logo">🌿 Vayumitra</div>
+        <p>Municipal Corporation of Delhi – Civic Pollution Reporting Platform</p>
+        <div class="footer-links">
+            <a href="#" onclick="showPage('home')">Report</a>
+            <a href="#" onclick="showPage('track')">Track</a>
+            <a href="#" onclick="showPage('login')">Admin</a>
+        </div>
+    </div>
 </footer>
+
 <!-- Toast -->
 <div class="toast" id="toast">
-<span id="toastIcon">✓</span>
-<span id="toastMessage">Success!</span>
+    <span id="toastIcon">✓</span>
+    <span id="toastMessage">Success!</span>
 </div>
 
-<!-- FIX 1: Script Loading Order Corrected -->
-<!-- 1. Leaflet Core JS -->
+<!-- Leaflet Core JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- 2. Leaflet Heatmap JS (Must be after Leaflet Core) -->
+<!-- Leaflet Heatmap JS -->
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-<!-- 3. Main Application Script -->
-<script>
-const API_URL = "http://localhost:3000";
-let allReports = [];
-let currentFilter = "ALL";
-let currentUnresolvedFilter = "ALL";
-let currentResolvedFilter = "ALL";
-let currentDashboardFilter = "ALL";
-let dashboardMap, unresolvedMap;
-let dashboardHeatLayer, unresolvedHeatLayer;
-const delhiBounds = L.latLngBounds([28.20, 76.80], [28.95, 77.80]);
-
-// Page Navigation
-function showPage(page) {
-document.querySelectorAll('.page-section').forEach(section => {
-section.classList.remove('active');
-});
-document.querySelectorAll('.nav-btn').forEach(btn => {
-btn.classList.remove('active');
-});
-document.getElementById(page + '-page').classList.add('active');
-const navMap = { 'home': 0, 'track': 1, 'unresolved': 2, 'resolved': 3, 'login': 4 };
-if (navMap[page] !== undefined) {
-document.querySelectorAll('.nav-btn')[navMap[page]]?.classList.add('active');
-}
-// Initialize maps with delay to ensure container is visible
-// FIX 2: Increased timeout to 300ms to ensure CSS display propagation
-if (page === 'dashboard') {
-setTimeout(() => { initDashboardMap(); loadDashboardReports(); }, 300);
-} else if (page === 'unresolved') {
-setTimeout(() => { initUnresolvedMap(); loadUnresolvedReports(); }, 300);
-} else if (page === 'resolved') {
-setTimeout(() => { loadResolvedReports(); }, 300);
-} else if (page === 'home') {
-setTimeout(() => { loadHomeStats(); }, 300);
-}
-window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Initialize Dashboard Map - FIXED
-function initDashboardMap() {
-if (dashboardMap) { dashboardMap.remove(); }
-dashboardMap = L.map('dashboardMap', { maxBounds: delhiBounds, maxBoundsViscosity: 1.0, minZoom: 10, maxZoom: 18 });
-dashboardMap.fitBounds(delhiBounds);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(dashboardMap);
-// FIX 2: Invalidate size immediately after init
-dashboardMap.invalidateSize();
-}
-
-// Initialize Unresolved Map - FIXED
-function initUnresolvedMap() {
-if (unresolvedMap) { unresolvedMap.remove(); }
-unresolvedMap = L.map('unresolvedMap', { maxBounds: delhiBounds, maxBoundsViscosity: 1.0, minZoom: 10, maxZoom: 18 });
-unresolvedMap.fitBounds(delhiBounds);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(unresolvedMap);
-// FIX 2: Invalidate size immediately after init
-unresolvedMap.invalidateSize();
-}
-
-// Load Reports
-async function loadReports() {
-try {
-const response = await fetch(`${API_URL}/reports`);
-allReports = await response.json();
-return allReports;
-} catch (error) {
-console.error('Error loading reports:', error);
-showToast('Error loading reports', 'error');
-return [];
-}
-}
-
-// Load Home Stats
-async function loadHomeStats() {
-const reports = await loadReports();
-document.getElementById('homeTotalReports').textContent = reports.length;
-document.getElementById('homePendingReports').textContent = reports.filter(r => r.status === 'Pending').length;
-document.getElementById('homeResolvedReports').textContent = reports.filter(r => r.status === 'Resolved').length;
-}
-
-// Load Dashboard Reports
-async function loadDashboardReports() {
-const reports = await loadReports();
-document.getElementById('dashTotalReports').textContent = reports.length;
-document.getElementById('dashPendingReports').textContent = reports.filter(r => r.status === 'Pending').length;
-document.getElementById('dashResolvedReports').textContent = reports.filter(r => r.status === 'Resolved').length;
-displayDashboardReports(reports);
-}
-
-// Display Dashboard Reports
-function displayDashboardReports(reports) {
-const list = document.getElementById('dashboardList');
-list.innerHTML = '';
-let filteredReports = reports;
-if (currentDashboardFilter !== 'ALL') {
-filteredReports = reports.filter(r => r.status === currentDashboardFilter);
-}
-let heatPoints = [];
-filteredReports.forEach(report => {
-heatPoints.push([report.latitude, report.longitude, report.upvotes + 1]);
-const li = document.createElement('li');
-li.className = 'report-item';
-li.innerHTML = `
-<div class="report-header">
-<div class="report-title">📍 ${report.issue_category}</div>
-<span class="report-status ${report.status.toLowerCase().replace(' ', '-')}">${report.status}</span>
-</div>
-<div class="report-details">
-<div class="report-detail"><strong>Colony:</strong> ${report.colony}</div>
-<div class="report-detail"><strong>ID:</strong> ${report.id}</div>
-<div class="report-detail"><strong>Upvotes:</strong> 👍 ${report.upvotes}</div>
-<div class="report-detail"><strong>Date:</strong> ${new Date(report.timestamp).toLocaleDateString()}</div>
-</div>
-<p style="color: var(--text-secondary); margin: 12px 0;">${report.description}</p>
-<div class="report-image">
-<img src="${API_URL}/${report.image_url}" alt="Report Image" onerror="this.style.display='none'">
-</div>
-<div class="report-actions">
-<select class="status-select" data-id="${report.id}" style="padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-weight: 600;">
-<option ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-<option ${report.status === 'Under Review' ? 'selected' : ''}>Under Review</option>
-<option ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-</select>
-<button class="btn btn-secondary" onclick="navigateToLocation(${report.latitude}, ${report.longitude})">🗺️ Navigate</button>
-<button class="btn btn-danger" onclick="deleteReport('${report.id}')">🗑️ Delete</button>
-</div>
-`;
-list.appendChild(li);
-});
-if (dashboardHeatLayer) { dashboardMap.removeLayer(dashboardHeatLayer); }
-if (heatPoints.length > 0) {
-dashboardHeatLayer = L.heatLayer(heatPoints, { radius: 20, blur: 35, maxZoom: 17, minOpacity: 0.5 }).addTo(dashboardMap);
-// FIX 2: Force map to recalculate size after adding heatmap layer
-dashboardMap.invalidateSize();
-}
-}
-
-// Load Unresolved Reports
-async function loadUnresolvedReports() {
-const reports = await loadReports();
-displayUnresolvedReports(reports);
-}
-
-// Display Unresolved Reports
-function displayUnresolvedReports(reports) {
-const list = document.getElementById('unresolvedList');
-list.innerHTML = '';
-let filteredReports = reports.filter(r => r.status !== 'Resolved');
-if (currentUnresolvedFilter !== 'ALL') {
-filteredReports = filteredReports.filter(r => r.status === currentUnresolvedFilter);
-}
-let heatPoints = [];
-filteredReports.forEach(report => {
-heatPoints.push([report.latitude, report.longitude, report.upvotes + 1]);
-const li = document.createElement('li');
-li.className = 'report-item';
-li.innerHTML = `
-<div class="report-header">
-<div class="report-title">📍 ${report.issue_category}</div>
-<span class="report-status ${report.status.toLowerCase().replace(' ', '-')}">${report.status}</span>
-</div>
-<div class="report-details">
-<div class="report-detail"><strong>Colony:</strong> ${report.colony}</div>
-<div class="report-detail"><strong>ID:</strong> ${report.id}</div>
-<div class="report-detail"><strong>Endorsement:</strong>  ${report.upvotes}</div>
-</div>
-<p style="color: var(--text-secondary); margin: 12px 0;">${report.description}</p>
-<div class="vote-buttons">
-<button class="vote-btn upvote" onclick="upvoteReport('${report.id}')">👍 Endorse (${report.upvotes})</button>
-<button class="btn btn-secondary" onclick="navigateToLocation(${report.latitude}, ${report.longitude})">🗺️ Navigate</button>
-</div>
-`;
-list.appendChild(li);
-});
-if (unresolvedHeatLayer) { unresolvedMap.removeLayer(unresolvedHeatLayer); }
-if (heatPoints.length > 0) {
-unresolvedHeatLayer = L.heatLayer(heatPoints, { radius: 20, blur: 35, maxZoom: 17, minOpacity: 0.5 }).addTo(unresolvedMap);
-// FIX 2: Force map to recalculate size after adding heatmap layer
-unresolvedMap.invalidateSize();
-}
-}
-
-// Load Resolved Reports
-async function loadResolvedReports() {
-const reports = await loadReports();
-displayResolvedReports(reports);
-}
-
-// Display Resolved Reports
-function displayResolvedReports(reports) {
-const list = document.getElementById('resolvedList');
-list.innerHTML = '';
-let filteredReports = reports.filter(r => r.status === 'Resolved');
-filteredReports.forEach(report => {
-const li = document.createElement('li');
-li.className = 'report-item';
-li.innerHTML = `
-<div class="report-header">
-<div class="report-title">📍 ${report.issue_category}</div>
-<span class="report-status resolved">✓ Resolved</span>
-</div>
-<div class="report-details">
-<div class="report-detail"><strong>Colony:</strong> ${report.colony}</div>
-<div class="report-detail"><strong>ID:</strong> ${report.id}</div>
-<div class="report-detail"><strong>Resolved:</strong> ${new Date(report.timestamp).toLocaleDateString()}</div>
-</div>
-<p style="color: var(--text-secondary); margin: 12px 0;">${report.description}</p>
-<div class="report-image">
-<img src="${API_URL}/${report.image_url}" alt="Report Image" onerror="this.style.display='none'">
-</div>
-`;
-list.appendChild(li);
-});
-}
-
-// Filter Functions
-function filterDashboard(status) {
-currentDashboardFilter = status;
-document.querySelectorAll('#dashboard-page .filter-btn').forEach(btn => btn.classList.remove('active'));
-event.target.classList.add('active');
-loadDashboardReports();
-}
-
-function filterUnresolved(status) {
-currentUnresolvedFilter = status;
-document.querySelectorAll('#unresolved-page .filter-btn').forEach(btn => btn.classList.remove('active'));
-event.target.classList.add('active');
-loadUnresolvedReports();
-}
-
-function filterResolved(status) {
-currentResolvedFilter = status;
-loadResolvedReports();
-}
-
-// Search Resolved - FIXED (WORKING NOW!)
-function searchResolved() {
-const search = prompt('Enter colony name to search:');
-if (!search) return;
-const list = document.getElementById('resolvedList');
-const reports = allReports.filter(r => r.status === 'Resolved');
-const filtered = reports.filter(r => r.colony.toLowerCase().includes(search.toLowerCase()));
-list.innerHTML = '';
-if (filtered.length === 0) {
-list.innerHTML = '<li class="report-item" style="text-align:center;color:#888;">No results found for "' + search + '"</li>';
-return;
-}
-filtered.forEach(report => {
-const li = document.createElement('li');
-li.className = 'report-item';
-li.innerHTML = `
-<div class="report-header">
-<div class="report-title">📍 ${report.issue_category}</div>
-<span class="report-status resolved">✓ Resolved</span>
-</div>
-<div class="report-details">
-<div class="report-detail"><strong>Colony:</strong> ${report.colony}</div>
-<div class="report-detail"><strong>ID:</strong> ${report.id}</div>
-<div class="report-detail"><strong>Resolved:</strong> ${new Date(report.timestamp).toLocaleDateString()}</div>
-</div>
-<p style="color: var(--text-secondary); margin: 12px 0;">${report.description}</p>
-<div class="report-image">
-<img src="${API_URL}/${report.image_url}" alt="Report Image" onerror="this.style.display='none'">
-</div>
-`;
-list.appendChild(li);
-});
-showToast(`Found ${filtered.length} result(s)`, 'success');
-}
-
-// Track Complaint
-async function trackComplaint() {
-const id = document.getElementById('trackInput').value.trim();
-if (!id) { showToast('Please enter acknowledgement number', 'error'); return; }
-try {
-const response = await fetch(`${API_URL}/report-status/${id}`);
-if (response.ok) {
-const report = await response.json();
-displayTrackResult(report);
-} else {
-showToast('Report not found', 'error');
-}
-} catch (error) {
-showToast('Error tracking complaint', 'error');
-}
-}
-
-function displayTrackResult(report) {
-const result = document.getElementById('trackResult');
-const icon = document.getElementById('trackIcon');
-document.getElementById('trackId').textContent = `ID: ${report.id}`;
-document.getElementById('trackColony').textContent = report.colony;
-document.getElementById('trackCategory').textContent = report.issue_category;
-document.getElementById('trackStatus').textContent = report.status;
-document.getElementById('trackDate').textContent = new Date(report.timestamp).toLocaleDateString();
-if (report.status === 'Resolved') {
-icon.style.background = '#e8f5e9';
-icon.style.color = 'var(--success)';
-icon.textContent = '✓';
-document.getElementById('trackTitle').textContent = 'Complaint Resolved';
-} else {
-icon.style.background = '#fff3e0';
-icon.style.color = 'var(--warning)';
-icon.textContent = '⏳';
-document.getElementById('trackTitle').textContent = 'Complaint Pending';
-}
-const imgContainer = document.getElementById('trackImageContainer');
-const img = document.getElementById('trackImage');
-if (report.image_url) {
-img.src = `${API_URL}/${report.image_url}`;
-imgContainer.style.display = 'block';
-} else {
-imgContainer.style.display = 'none';
-}
-result.classList.add('show');
-}
-
-// Report Form Submission
-document.getElementById('reportForm').addEventListener('submit', async function(e) {
-e.preventDefault();
-const file = document.getElementById('imageInput').files[0];
-if (!file) { showToast('Please capture an image', 'error'); return; }
-const colony = document.getElementById('colony').value.trim();
-const mobile = document.getElementById('mobile').value.trim();
-const category = document.getElementById('category').value;
-const description = document.getElementById('description').value;
-if (!latitude || !longitude) { showToast('Waiting for GPS location...', 'error'); return; }
-const formData = new FormData();
-formData.append('image', file);
-formData.append('latitude', latitude);
-formData.append('longitude', longitude);
-formData.append('category', category);
-formData.append('description', description);
-formData.append('colony', colony);
-formData.append('mobile', mobile);
-try {
-const response = await fetch(`${API_URL}/report`, { method: 'POST', body: formData });
-const result = await response.json();
-document.getElementById('ackNumber').textContent = result.acknowledgement;
-document.getElementById('successMessage').style.display = 'block';
-document.getElementById('reportForm').reset();
-document.getElementById('imagePreview').innerHTML = '';
-showToast('Report submitted successfully!', 'success');
-loadHomeStats();
-} catch (error) {
-console.error(error);
-showToast('Submission failed. Please try again.', 'error');
-}
-});
-
-// Image Upload Preview
-document.getElementById('imageInput').addEventListener('change', function() {
-const file = this.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-};
-reader.readAsDataURL(file);
-});
-
-// Location
-let latitude = null;
-let longitude = null;
-function getLocation() {
-if (!navigator.geolocation) { showToast('Geolocation not supported', 'error'); return; }
-navigator.geolocation.getCurrentPosition(
-function(position) {
-latitude = position.coords.latitude;
-longitude = position.coords.longitude;
-document.getElementById('latitude').textContent = `Latitude: ${latitude.toFixed(6)}`;
-document.getElementById('longitude').textContent = `Longitude: ${longitude.toFixed(6)}`;
-showToast('Location detected!', 'success');
-},
-function() { showToast('Location access denied', 'error'); }
-);
-}
-getLocation();
-
-// Status Update
-document.addEventListener('change', async function(e) {
-if (e.target.classList.contains('status-select')) {
-const id = e.target.dataset.id;
-const status = e.target.value;
-try {
-await fetch(`${API_URL}/report/${id}`, {
-method: 'PUT',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ status })
-});
-showToast('Status updated!', 'success');
-loadDashboardReports();
-} catch (error) {
-showToast('Error updating status', 'error');
-}
-}
-});
-
-// Delete Report
-async function deleteReport(id) {
-if (!confirm('Are you sure you want to delete this report?')) return;
-try {
-await fetch(`${API_URL}/report/${id}`, { method: 'DELETE' });
-showToast('Report deleted!', 'success');
-loadDashboardReports();
-} catch (error) {
-showToast('Error deleting report', 'error');
-}
-}
-
-// Upvote Report
-async function upvoteReport(id) {
-try {
-await fetch(`${API_URL}/upvote/${id}`, { method: 'POST' });
-showToast('Support added!', 'success');
-loadUnresolvedReports();
-} catch (error) {
-showToast('Error adding support', 'error');
-}
-}
-
-// Navigate to Location
-function navigateToLocation(lat, lng) {
-const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-window.open(url, '_blank');
-}
-
-// Login Handler
-function handleLogin(e) {
-e.preventDefault();
-const username = document.getElementById('username').value;
-const password = document.getElementById('password').value;
-if (username === 'admin' && password === 'admin') {
-showToast('Login successful!', 'success');
-showPage('dashboard');
-document.getElementById('loginForm').reset();
-} else {
-showToast('Invalid credentials', 'error');
-}
-}
-
-// Toast Notification
-function showToast(message, type = 'success') {
-const toast = document.getElementById('toast');
-const toastIcon = document.getElementById('toastIcon');
-const toastMessage = document.getElementById('toastMessage');
-toast.className = `toast ${type}`;
-toastIcon.textContent = type === 'success' ? '✓' : '✕';
-toastMessage.textContent = message;
-toast.classList.add('show');
-setTimeout(() => { toast.classList.remove('show'); }, 3000);
-}
-
-// Initialize on load
-document.addEventListener('DOMContentLoaded', function() {
-loadHomeStats();
-});
-</script>
+<!-- Main Application Script -->
+<script src="script.js"></script>
 </body>
 </html>
