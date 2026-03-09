@@ -9,8 +9,7 @@
 <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800" rel="stylesheet" />
 <!-- Leaflet CSS - REQUIRED FOR MAP -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<!-- Leaflet Heatmap -->
-<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<!-- Leaflet Heatmap CSS (Optional, usually handled by JS, but keeping head clean) -->
 <style>
 :root {
 --primary: #1976d2;
@@ -505,7 +504,7 @@ z-index: 2000;
 <a href="#" class="logo" onclick="showPage('home')">
 <div class="logo-icon">🌿</div>
 <div class="logo-text">
-<h1>Vayumitra</h1>
+<h1>Vayu Mitra</h1>
 <p>Civic Pollution Reporting Platform</p>
 </div>
 </a>
@@ -792,8 +791,13 @@ z-index: 2000;
 <span id="toastIcon">✓</span>
 <span id="toastMessage">Success!</span>
 </div>
-<!-- Leaflet JS - REQUIRED FOR MAP -->
+
+<!-- FIX 1: Script Loading Order Corrected -->
+<!-- 1. Leaflet Core JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- 2. Leaflet Heatmap JS (Must be after Leaflet Core) -->
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<!-- 3. Main Application Script -->
 <script>
 const API_URL = "http://localhost:3000";
 let allReports = [];
@@ -804,6 +808,7 @@ let currentDashboardFilter = "ALL";
 let dashboardMap, unresolvedMap;
 let dashboardHeatLayer, unresolvedHeatLayer;
 const delhiBounds = L.latLngBounds([28.20, 76.80], [28.95, 77.80]);
+
 // Page Navigation
 function showPage(page) {
 document.querySelectorAll('.page-section').forEach(section => {
@@ -818,35 +823,39 @@ if (navMap[page] !== undefined) {
 document.querySelectorAll('.nav-btn')[navMap[page]]?.classList.add('active');
 }
 // Initialize maps with delay to ensure container is visible
+// FIX 2: Increased timeout to 300ms to ensure CSS display propagation
 if (page === 'dashboard') {
-setTimeout(() => { initDashboardMap(); loadDashboardReports(); }, 200);
+setTimeout(() => { initDashboardMap(); loadDashboardReports(); }, 300);
 } else if (page === 'unresolved') {
-setTimeout(() => { initUnresolvedMap(); loadUnresolvedReports(); }, 200);
+setTimeout(() => { initUnresolvedMap(); loadUnresolvedReports(); }, 300);
 } else if (page === 'resolved') {
-setTimeout(() => { loadResolvedReports(); }, 200);
+setTimeout(() => { loadResolvedReports(); }, 300);
 } else if (page === 'home') {
-setTimeout(() => { loadHomeStats(); }, 200);
+setTimeout(() => { loadHomeStats(); }, 300);
 }
 window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
 // Initialize Dashboard Map - FIXED
 function initDashboardMap() {
 if (dashboardMap) { dashboardMap.remove(); }
 dashboardMap = L.map('dashboardMap', { maxBounds: delhiBounds, maxBoundsViscosity: 1.0, minZoom: 10, maxZoom: 18 });
 dashboardMap.fitBounds(delhiBounds);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(dashboardMap);
-// Fix map rendering after container becomes visible
-setTimeout(() => { dashboardMap.invalidateSize(); }, 300);
+// FIX 2: Invalidate size immediately after init
+dashboardMap.invalidateSize();
 }
+
 // Initialize Unresolved Map - FIXED
 function initUnresolvedMap() {
 if (unresolvedMap) { unresolvedMap.remove(); }
 unresolvedMap = L.map('unresolvedMap', { maxBounds: delhiBounds, maxBoundsViscosity: 1.0, minZoom: 10, maxZoom: 18 });
 unresolvedMap.fitBounds(delhiBounds);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(unresolvedMap);
-// Fix map rendering after container becomes visible
-setTimeout(() => { unresolvedMap.invalidateSize(); }, 300);
+// FIX 2: Invalidate size immediately after init
+unresolvedMap.invalidateSize();
 }
+
 // Load Reports
 async function loadReports() {
 try {
@@ -859,6 +868,7 @@ showToast('Error loading reports', 'error');
 return [];
 }
 }
+
 // Load Home Stats
 async function loadHomeStats() {
 const reports = await loadReports();
@@ -866,6 +876,7 @@ document.getElementById('homeTotalReports').textContent = reports.length;
 document.getElementById('homePendingReports').textContent = reports.filter(r => r.status === 'Pending').length;
 document.getElementById('homeResolvedReports').textContent = reports.filter(r => r.status === 'Resolved').length;
 }
+
 // Load Dashboard Reports
 async function loadDashboardReports() {
 const reports = await loadReports();
@@ -874,6 +885,7 @@ document.getElementById('dashPendingReports').textContent = reports.filter(r => 
 document.getElementById('dashResolvedReports').textContent = reports.filter(r => r.status === 'Resolved').length;
 displayDashboardReports(reports);
 }
+
 // Display Dashboard Reports
 function displayDashboardReports(reports) {
 const list = document.getElementById('dashboardList');
@@ -917,13 +929,17 @@ list.appendChild(li);
 if (dashboardHeatLayer) { dashboardMap.removeLayer(dashboardHeatLayer); }
 if (heatPoints.length > 0) {
 dashboardHeatLayer = L.heatLayer(heatPoints, { radius: 20, blur: 35, maxZoom: 17, minOpacity: 0.5 }).addTo(dashboardMap);
+// FIX 2: Force map to recalculate size after adding heatmap layer
+dashboardMap.invalidateSize();
 }
 }
+
 // Load Unresolved Reports
 async function loadUnresolvedReports() {
 const reports = await loadReports();
 displayUnresolvedReports(reports);
 }
+
 // Display Unresolved Reports
 function displayUnresolvedReports(reports) {
 const list = document.getElementById('unresolvedList');
@@ -945,11 +961,11 @@ li.innerHTML = `
 <div class="report-details">
 <div class="report-detail"><strong>Colony:</strong> ${report.colony}</div>
 <div class="report-detail"><strong>ID:</strong> ${report.id}</div>
-<div class="report-detail"><strong>Support:</strong> 👍 ${report.upvotes}</div>
+<div class="report-detail"><strong>Endorsement:</strong>  ${report.upvotes}</div>
 </div>
 <p style="color: var(--text-secondary); margin: 12px 0;">${report.description}</p>
 <div class="vote-buttons">
-<button class="vote-btn upvote" onclick="upvoteReport('${report.id}')">👍 Support (${report.upvotes})</button>
+<button class="vote-btn upvote" onclick="upvoteReport('${report.id}')">👍 Endorse (${report.upvotes})</button>
 <button class="btn btn-secondary" onclick="navigateToLocation(${report.latitude}, ${report.longitude})">🗺️ Navigate</button>
 </div>
 `;
@@ -958,13 +974,17 @@ list.appendChild(li);
 if (unresolvedHeatLayer) { unresolvedMap.removeLayer(unresolvedHeatLayer); }
 if (heatPoints.length > 0) {
 unresolvedHeatLayer = L.heatLayer(heatPoints, { radius: 20, blur: 35, maxZoom: 17, minOpacity: 0.5 }).addTo(unresolvedMap);
+// FIX 2: Force map to recalculate size after adding heatmap layer
+unresolvedMap.invalidateSize();
 }
 }
+
 // Load Resolved Reports
 async function loadResolvedReports() {
 const reports = await loadReports();
 displayResolvedReports(reports);
 }
+
 // Display Resolved Reports
 function displayResolvedReports(reports) {
 const list = document.getElementById('resolvedList');
@@ -991,6 +1011,7 @@ li.innerHTML = `
 list.appendChild(li);
 });
 }
+
 // Filter Functions
 function filterDashboard(status) {
 currentDashboardFilter = status;
@@ -998,16 +1019,19 @@ document.querySelectorAll('#dashboard-page .filter-btn').forEach(btn => btn.clas
 event.target.classList.add('active');
 loadDashboardReports();
 }
+
 function filterUnresolved(status) {
 currentUnresolvedFilter = status;
 document.querySelectorAll('#unresolved-page .filter-btn').forEach(btn => btn.classList.remove('active'));
 event.target.classList.add('active');
 loadUnresolvedReports();
 }
+
 function filterResolved(status) {
 currentResolvedFilter = status;
 loadResolvedReports();
 }
+
 // Search Resolved - FIXED (WORKING NOW!)
 function searchResolved() {
 const search = prompt('Enter colony name to search:');
@@ -1042,6 +1066,7 @@ list.appendChild(li);
 });
 showToast(`Found ${filtered.length} result(s)`, 'success');
 }
+
 // Track Complaint
 async function trackComplaint() {
 const id = document.getElementById('trackInput').value.trim();
@@ -1058,6 +1083,7 @@ showToast('Report not found', 'error');
 showToast('Error tracking complaint', 'error');
 }
 }
+
 function displayTrackResult(report) {
 const result = document.getElementById('trackResult');
 const icon = document.getElementById('trackIcon');
@@ -1087,6 +1113,7 @@ imgContainer.style.display = 'none';
 }
 result.classList.add('show');
 }
+
 // Report Form Submission
 document.getElementById('reportForm').addEventListener('submit', async function(e) {
 e.preventDefault();
@@ -1119,6 +1146,7 @@ console.error(error);
 showToast('Submission failed. Please try again.', 'error');
 }
 });
+
 // Image Upload Preview
 document.getElementById('imageInput').addEventListener('change', function() {
 const file = this.files[0];
@@ -1129,6 +1157,7 @@ document.getElementById('imagePreview').innerHTML = `<img src="${e.target.result
 };
 reader.readAsDataURL(file);
 });
+
 // Location
 let latitude = null;
 let longitude = null;
@@ -1146,6 +1175,7 @@ function() { showToast('Location access denied', 'error'); }
 );
 }
 getLocation();
+
 // Status Update
 document.addEventListener('change', async function(e) {
 if (e.target.classList.contains('status-select')) {
@@ -1164,6 +1194,7 @@ showToast('Error updating status', 'error');
 }
 }
 });
+
 // Delete Report
 async function deleteReport(id) {
 if (!confirm('Are you sure you want to delete this report?')) return;
@@ -1175,6 +1206,7 @@ loadDashboardReports();
 showToast('Error deleting report', 'error');
 }
 }
+
 // Upvote Report
 async function upvoteReport(id) {
 try {
@@ -1185,11 +1217,13 @@ loadUnresolvedReports();
 showToast('Error adding support', 'error');
 }
 }
+
 // Navigate to Location
 function navigateToLocation(lat, lng) {
 const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 window.open(url, '_blank');
 }
+
 // Login Handler
 function handleLogin(e) {
 e.preventDefault();
@@ -1203,6 +1237,7 @@ document.getElementById('loginForm').reset();
 showToast('Invalid credentials', 'error');
 }
 }
+
 // Toast Notification
 function showToast(message, type = 'success') {
 const toast = document.getElementById('toast');
@@ -1214,6 +1249,7 @@ toastMessage.textContent = message;
 toast.classList.add('show');
 setTimeout(() => { toast.classList.remove('show'); }, 3000);
 }
+
 // Initialize on load
 document.addEventListener('DOMContentLoaded', function() {
 loadHomeStats();
