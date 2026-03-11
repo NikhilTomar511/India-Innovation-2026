@@ -156,7 +156,7 @@ body.dark-mode @keyframes glassShine {
 .logo-icon {
     width: 48px;
     height: 48px;
-    background: rgba(255, 255, 255, 0.2);
+    background: transparent;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
