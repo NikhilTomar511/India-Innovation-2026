@@ -4,18 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vayumitra - City Pollution Reporter</title>
-<!-- Modern Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<!-- Custom CSS -->
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- Header -->
 <header class="header">
     <div class="header-content">
         <a href="#" class="logo" onclick="showPage('home')">
@@ -31,7 +26,6 @@
             <a href="#" class="nav-btn" onclick="showPage('unresolved')">⚠️ Unresolved</a>
             <a href="#" class="nav-btn" onclick="showPage('resolved')">✅ Resolved</a>
             <a href="#" class="nav-btn danger" onclick="showPage('login')">🔐 Admin</a>
-            <!-- Dark Mode Toggle -->
             <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
                 <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -51,10 +45,7 @@
         </nav>
     </div>
 </header>
-
-<!-- Main Container -->
 <div class="container">
-    <!-- Home Page -->
     <section id="home-page" class="page-section active">
         <div class="hero animate-fade">
             <span class="hero-icon">🏙️</span>
@@ -146,8 +137,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Track Page -->
     <section id="track-page" class="page-section">
         <div class="hero animate-fade">
             <span class="hero-icon">🔍</span>
@@ -188,8 +177,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Unresolved Page -->
     <section id="unresolved-page" class="page-section">
         <div class="hero animate-fade">
             <span class="hero-icon">⚠️</span>
@@ -218,8 +205,6 @@
             <ul class="report-list" id="unresolvedList"></ul>
         </div>
     </section>
-
-    <!-- Resolved Page -->
     <section id="resolved-page" class="page-section">
         <div class="hero animate-fade">
             <span class="hero-icon">✅</span>
@@ -241,8 +226,6 @@
             <ul class="report-list" id="resolvedList"></ul>
         </div>
     </section>
-
-    <!-- Dashboard Page -->
     <section id="dashboard-page" class="page-section">
         <div class="hero animate-fade">
             <span class="hero-icon">📊</span>
@@ -289,8 +272,6 @@
             <ul class="report-list" id="dashboardList"></ul>
         </div>
     </section>
-
-    <!-- Login Page -->
     <section id="login-page" class="page-section">
         <div class="login-container animate-fade">
             <div class="login-card">
@@ -314,8 +295,6 @@
         </div>
     </section>
 </div>
-
-<!-- Footer -->
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-logo">Vayu Mitra</div>
@@ -327,18 +306,12 @@
         </div>
     </div>
 </footer>
-
-<!-- Toast -->
 <div class="toast" id="toast">
     <span id="toastIcon">✓</span>
     <span id="toastMessage">Success!</span>
 </div>
-
-<!-- Leaflet Core JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Leaflet Heatmap JS -->
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-<!-- Main Application Script -->
 <script src="script.js"></script>
 </body>
 </html>
