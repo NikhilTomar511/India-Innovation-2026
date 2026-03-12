@@ -7,26 +7,18 @@ let currentDashboardFilter = "ALL";
 let dashboardMap, unresolvedMap;
 let dashboardHeatLayer, unresolvedHeatLayer;
 const delhiBounds = L.latLngBounds([28.20, 76.80], [28.95, 77.80]);
-
-// ===== Dark Mode Toggle =====
 const themeToggle = document.getElementById('theme-toggle');
 const iconMoon = document.querySelector('.icon-moon');
 const iconSun = document.querySelector('.icon-sun');
-
-// Check localStorage on load
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'dark') {
     document.body.classList.add('dark-mode');
     iconMoon.style.display = 'none';
     iconSun.style.display = 'block';
 }
-
-// Toggle Function
 themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
-    
-    // Swap Icons
     if (isDark) {
         iconMoon.style.display = 'none';
         iconSun.style.display = 'block';
@@ -36,13 +28,9 @@ themeToggle.addEventListener('click', () => {
         iconSun.style.display = 'none';
         localStorage.setItem('theme', 'light');
     }
-    
-    // Refresh maps if they exist (to adjust tile layers if needed)
     if (dashboardMap) dashboardMap.invalidateSize();
     if (unresolvedMap) unresolvedMap.invalidateSize();
 });
-
-// Page Navigation
 function showPage(page) {
     document.querySelectorAll('.page-section').forEach(section => {
         section.classList.remove('active');
@@ -66,8 +54,6 @@ function showPage(page) {
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-// Initialize Dashboard Map
 function initDashboardMap() {
     if (dashboardMap) { dashboardMap.remove(); }
     dashboardMap = L.map('dashboardMap', { maxBounds: delhiBounds, maxBoundsViscosity: 1.0, minZoom: 10, maxZoom: 18 });
@@ -75,8 +61,6 @@ function initDashboardMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(dashboardMap);
     dashboardMap.invalidateSize();
 }
-
-// Initialize Unresolved Map
 function initUnresolvedMap() {
     if (unresolvedMap) { unresolvedMap.remove(); }
     unresolvedMap = L.map('unresolvedMap', { maxBounds: delhiBounds, maxBoundsViscosity: 1.0, minZoom: 10, maxZoom: 18 });
@@ -84,8 +68,6 @@ function initUnresolvedMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(unresolvedMap);
     unresolvedMap.invalidateSize();
 }
-
-// Load Reports
 async function loadReports() {
     try {
         const response = await fetch(`${API_URL}/reports`);
@@ -97,16 +79,12 @@ async function loadReports() {
         return [];
     }
 }
-
-// Load Home Stats
 async function loadHomeStats() {
     const reports = await loadReports();
     document.getElementById('homeTotalReports').textContent = reports.length;
     document.getElementById('homePendingReports').textContent = reports.filter(r => r.status === 'Pending').length;
     document.getElementById('homeResolvedReports').textContent = reports.filter(r => r.status === 'Resolved').length;
 }
-
-// Load Dashboard Reports
 async function loadDashboardReports() {
     const reports = await loadReports();
     document.getElementById('dashTotalReports').textContent = reports.length;
@@ -114,8 +92,6 @@ async function loadDashboardReports() {
     document.getElementById('dashResolvedReports').textContent = reports.filter(r => r.status === 'Resolved').length;
     displayDashboardReports(reports);
 }
-
-// Display Dashboard Reports
 function displayDashboardReports(reports) {
     const list = document.getElementById('dashboardList');
     list.innerHTML = '';
@@ -161,14 +137,10 @@ function displayDashboardReports(reports) {
         dashboardMap.invalidateSize();
     }
 }
-
-// Load Unresolved Reports
 async function loadUnresolvedReports() {
     const reports = await loadReports();
     displayUnresolvedReports(reports);
 }
-
-// Display Unresolved Reports
 function displayUnresolvedReports(reports) {
     const list = document.getElementById('unresolvedList');
     list.innerHTML = '';
@@ -205,14 +177,10 @@ function displayUnresolvedReports(reports) {
         unresolvedMap.invalidateSize();
     }
 }
-
-// Load Resolved Reports
 async function loadResolvedReports() {
     const reports = await loadReports();
     displayResolvedReports(reports);
 }
-
-// Display Resolved Reports
 function displayResolvedReports(reports) {
     const list = document.getElementById('resolvedList');
     list.innerHTML = '';
@@ -238,28 +206,22 @@ function displayResolvedReports(reports) {
         list.appendChild(li);
     });
 }
-
-// Filter Functions
 function filterDashboard(status) {
     currentDashboardFilter = status;
     document.querySelectorAll('#dashboard-page .filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
     loadDashboardReports();
 }
-
 function filterUnresolved(status) {
     currentUnresolvedFilter = status;
     document.querySelectorAll('#unresolved-page .filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
     loadUnresolvedReports();
 }
-
 function filterResolved(status) {
     currentResolvedFilter = status;
     loadResolvedReports();
 }
-
-// Search Resolved
 function searchResolved() {
     const search = prompt('Enter colony name to search:');
     if (!search) return;
@@ -293,8 +255,6 @@ function searchResolved() {
     });
     showToast(`Found ${filtered.length} result(s)`, 'success');
 }
-
-// Track Complaint
 async function trackComplaint() {
     const id = document.getElementById('trackInput').value.trim();
     if (!id) { showToast('Please enter acknowledgement number', 'error'); return; }
@@ -310,7 +270,6 @@ async function trackComplaint() {
         showToast('Error tracking complaint', 'error');
     }
 }
-
 function displayTrackResult(report) {
     const result = document.getElementById('trackResult');
     const icon = document.getElementById('trackIcon');
@@ -340,8 +299,6 @@ function displayTrackResult(report) {
     }
     result.classList.add('show');
 }
-
-// Report Form Submission
 document.getElementById('reportForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const file = document.getElementById('imageInput').files[0];
@@ -373,8 +330,6 @@ document.getElementById('reportForm').addEventListener('submit', async function(
         showToast('Submission failed. Please try again.', 'error');
     }
 });
-
-// Image Upload Preview
 document.getElementById('imageInput').addEventListener('change', function() {
     const file = this.files[0];
     if (!file) return;
@@ -384,11 +339,8 @@ document.getElementById('imageInput').addEventListener('change', function() {
     };
     reader.readAsDataURL(file);
 });
-
-// Location
 let latitude = null;
 let longitude = null;
-
 function getLocation() {
     if (!navigator.geolocation) { showToast('Geolocation not supported', 'error'); return; }
     navigator.geolocation.getCurrentPosition(
@@ -402,10 +354,7 @@ function getLocation() {
         function() { showToast('Location access denied', 'error'); }
     );
 }
-
 getLocation();
-
-// Status Update
 document.addEventListener('change', async function(e) {
     if (e.target.classList.contains('status-select')) {
         const id = e.target.dataset.id;
@@ -423,8 +372,6 @@ document.addEventListener('change', async function(e) {
         }
     }
 });
-
-// Delete Report
 async function deleteReport(id) {
     if (!confirm('Are you sure you want to delete this report?')) return;
     try {
@@ -435,8 +382,6 @@ async function deleteReport(id) {
         showToast('Error deleting report', 'error');
     }
 }
-
-// Upvote Report
 async function upvoteReport(id) {
     try {
         await fetch(`${API_URL}/upvote/${id}`, { method: 'POST' });
@@ -446,14 +391,10 @@ async function upvoteReport(id) {
         showToast('Error adding support', 'error');
     }
 }
-
-// Navigate to Location
 function navigateToLocation(lat, lng) {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
     window.open(url, '_blank');
 }
-
-// Login Handler
 function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('username').value;
@@ -466,8 +407,6 @@ function handleLogin(e) {
         showToast('Invalid credentials', 'error');
     }
 }
-
-// Toast Notification
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastIcon = document.getElementById('toastIcon');
@@ -478,8 +417,6 @@ function showToast(message, type = 'success') {
     toast.classList.add('show');
     setTimeout(() => { toast.classList.remove('show'); }, 3000);
 }
-
-// Initialize on load
 document.addEventListener('DOMContentLoaded', function() {
     loadHomeStats();
 });
